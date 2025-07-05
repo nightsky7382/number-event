@@ -5,128 +5,138 @@
   <title>이벤트 추첨기</title>
   <style>
     body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      font-family: 'Arial', sans-serif;
       text-align: center;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     h1 {
-      margin-top: 40px;
-      color: #fff;
-      font-size: 2.5em;
+      padding: 30px;
+      color: #333;
     }
 
     .input-container {
-      margin: 30px auto;
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 20px;
+      margin-bottom: 20px;
     }
 
     input {
       padding: 10px;
       font-size: 1.2em;
       width: 100px;
-      border-radius: 8px;
+      text-align: center;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.3em;
+      background-color: #ff6f61;
+      color: white;
       border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* 모달 */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      position: relative;
+      width: 80%;
+      max-width: 400px;
       text-align: center;
     }
 
-    #drawBtn {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 20px 40px;
-      font-size: 1.5em;
-      border: none;
-      border-radius: 50px;
-      background-color: #ff5f6d;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      animation: pulse 2s infinite;
+    .spinning-number {
+      font-size: 3em;
+      animation: spin 0.1s linear infinite;
+      margin-top: 20px;
     }
 
-    @keyframes pulse {
-      0% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1); }
-      100% { transform: translateX(-50%) scale(1); }
+    @keyframes spin {
+      0% { transform: rotateX(0deg); }
+      100% { transform: rotateX(360deg); }
     }
 
-    #result {
-      font-size: 6em;
-      color: #fff;
+    .final-number {
+      font-size: 4em;
+      color: #ff5722;
       font-weight: bold;
-      margin-top: 40px;
-      animation: fadeIn 1s ease-in-out;
+      animation: pop 0.5s ease-in-out forwards;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.5); }
-      to { opacity: 1; transform: scale(1); }
+    @keyframes pop {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <h1>🎊 이벤트 당첨자 추첨기 🎉</h1>
-
+  <h1>🎉 이벤트 추첨기</h1>
   <div class="input-container">
-    <input type="number" id="minNum" placeholder="시작" value="1" />
-    <input type="number" id="maxNum" placeholder="끝" value="100" />
+    <input type="number" id="minNum" value="1" />
+    <input type="number" id="maxNum" value="100" />
+  </div>
+  <button id="startBtn">추첨하기</button>
+
+  <!-- 모달 -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div id="numberDisplay" class="spinning-number">🎲</div>
+    </div>
   </div>
 
-  <div id="result"></div>
-
-  <button id="drawBtn">🎁 추첨하기!</button>
-
   <!-- 사운드 -->
-  <audio id="clapSound" src="https://www.soundjay.com/human/applause-01.mp3" preload="auto"></audio>
-  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-celebration.mp3" preload="auto"></audio>
+  <audio id="suspense" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4a0ad69a1b.mp3?filename=tense-violins-11271.mp3"></audio>
+  <audio id="clap" src="https://www.soundjay.com/human/applause-01.mp3"></audio>
+  <audio id="celebrate" src="https://www.bensound.com/bensound-music/bensound-celebration.mp3"></audio>
 
-  <!-- 폭죽 효과 -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
   <script>
-    const drawBtn = document.getElementById('drawBtn');
-    const result = document.getElementById('result');
-    const clapSound = document.getElementById('clapSound');
-    const bgMusic = document.getElementById('bgMusic');
+    const minInput = document.getElementById('minNum');
+    const maxInput = document.getElementById('maxNum');
+    const startBtn = document.getElementById('startBtn');
+    const modal = document.getElementById('modal');
+    const numberDisplay = document.getElementById('numberDisplay');
+    const suspense = document.getElementById('suspense');
+    const clap = document.getElementById('clap');
+    const celebrate = document.getElementById('celebrate');
 
-    function fireConfetti() {
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
-        }, i * 300);
+    let availableNumbers = [];
+
+    function initNumbers(min, max) {
+      availableNumbers = [];
+      for (let i = min; i <= max; i++) {
+        availableNumbers.push(i);
       }
     }
 
-    drawBtn.addEventListener('click', () => {
-      const min = parseInt(document.getElementById('minNum').value);
-      const max = parseInt(document.getElementById('maxNum').value);
+    function getRandomFromAvailable() {
+      const idx = Math.floor(Math.random() * availableNumbers.length);
+      return availableNumbers.splice(idx, 1)[0];
+    }
 
-      if (isNaN(min) || isNaN(max) || min > max) {
-        alert('유효한 숫자 범위를 입력해주세요!');
-        return;
-      }
-
-      const random = Math.floor(Math.random() * (max - min + 1)) + min;
-      result.textContent = random;
-
-      // 효과
-      fireConfetti();
-      clapSound.currentTime = 0;
-      bgMusic.currentTime = 0;
-      clapSound.play();
-      bgMusic.play();
-    });
-  </script>
-</body>
-</html>
+    function fireConfetti() {
+      confetti({
+        particleCount: 200,
+        sprea
