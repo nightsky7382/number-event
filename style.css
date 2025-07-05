@@ -1,0 +1,38 @@
+.lotto-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lotto-numbers {
+  display: flex;
+  justify-content: space-around;
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.number-ball {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: lightblue;
+  text-align: center;
+  line-height: 50px;
+  font-size: 20px;
+  color: white;
+  transition: transform 0.3s ease; /* 공 크기 변화 애니메이션 */
+}
+
+/* 추첨 중 애니메이션 */
+.number-ball.spinning {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
