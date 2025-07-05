@@ -2,26 +2,131 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>랜덤 숫자 추첨기</title>
+  <title>이벤트 추첨기</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 40px;
+      color: #fff;
+      font-size: 2.5em;
+    }
+
+    .input-container {
+      margin: 30px auto;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 1.2em;
+      width: 100px;
+      border-radius: 8px;
+      border: none;
+      text-align: center;
+    }
+
+    #drawBtn {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 50px;
+      background-color: #ff5f6d;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    #result {
+      font-size: 6em;
+      color: #fff;
+      font-weight: bold;
+      margin-top: 40px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
-  <h1>숫자 추첨기</h1>
-  <label>시작 숫자: <input type="number" id="minNum" value="1" /></label><br />
-  <label>끝 숫자: <input type="number" id="maxNum" value="100" /></label><br />
-  <button onclick="drawNumber()">추첨하기</button>
-  <p id="result"></p>
+  <h1>🎊 이벤트 당첨자 추첨기 🎉</h1>
+
+  <div class="input-container">
+    <input type="number" id="minNum" placeholder="시작" value="1" />
+    <input type="number" id="maxNum" placeholder="끝" value="100" />
+  </div>
+
+  <div id="result"></div>
+
+  <button id="drawBtn">🎁 추첨하기!</button>
+
+  <!-- 사운드 -->
+  <audio id="clapSound" src="https://www.soundjay.com/human/applause-01.mp3" preload="auto"></audio>
+  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-celebration.mp3" preload="auto"></audio>
+
+  <!-- 폭죽 효과 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
-    function drawNumber() {
-      const min = parseInt(document.getElementById("minNum").value);
-      const max = parseInt(document.getElementById("maxNum").value);
+    const drawBtn = document.getElementById('drawBtn');
+    const result = document.getElementById('result');
+    const clapSound = document.getElementById('clapSound');
+    const bgMusic = document.getElementById('bgMusic');
+
+    function fireConfetti() {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }, i * 300);
+      }
+    }
+
+    drawBtn.addEventListener('click', () => {
+      const min = parseInt(document.getElementById('minNum').value);
+      const max = parseInt(document.getElementById('maxNum').value);
+
       if (isNaN(min) || isNaN(max) || min > max) {
-        alert("유효한 숫자 범위를 입력하세요!");
+        alert('유효한 숫자 범위를 입력해주세요!');
         return;
       }
+
       const random = Math.floor(Math.random() * (max - min + 1)) + min;
-      document.getElementById("result").innerText = `당첨 숫자: ${random}`;
-    }
+      result.textContent = random;
+
+      // 효과
+      fireConfetti();
+      clapSound.currentTime = 0;
+      bgMusic.currentTime = 0;
+      clapSound.play();
+      bgMusic.play();
+    });
   </script>
 </body>
 </html>
