@@ -139,4 +139,59 @@
     function fireConfetti() {
       confetti({
         particleCount: 200,
-        sprea
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+    }
+
+    startBtn.addEventListener('click', () => {
+      const min = parseInt(minInput.value);
+      const max = parseInt(maxInput.value);
+      if (isNaN(min) || isNaN(max) || min > max) {
+        alert("올바른 범위를 입력해주세요!");
+        return;
+      }
+
+      if (availableNumbers.length === 0) {
+        initNumbers(min, max);
+      }
+
+      if (availableNumbers.length === 0) {
+        alert("모든 번호를 추첨했습니다!");
+        return;
+      }
+
+      const drawnNumber = getRandomFromAvailable();
+      numberDisplay.className = "spinning-number";
+      numberDisplay.textContent = '🎲';
+
+      modal.style.display = "flex";
+      suspense.currentTime = 0;
+      suspense.play();
+
+      let spinInterval = setInterval(() => {
+        numberDisplay.textContent = Math.floor(Math.random() * (max - min + 1)) + min;
+      }, 80);
+
+      setTimeout(() => {
+        clearInterval(spinInterval);
+        suspense.pause();
+        numberDisplay.className = "final-number";
+        numberDisplay.textContent = drawnNumber;
+
+        // 사운드 + 효과
+        clap.currentTime = 0;
+        celebrate.currentTime = 0;
+        clap.play();
+        celebrate.play();
+        fireConfetti();
+      }, 4000); // 4초간 숫자 회전
+    });
+
+    // 클릭 시 모달 닫기
+    modal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
