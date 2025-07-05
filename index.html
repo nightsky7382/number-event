@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>랜덤 숫자 추첨기</title>
+</head>
+<body>
+  <h1>숫자 추첨기</h1>
+  <label>시작 숫자: <input type="number" id="minNum" value="1" /></label><br />
+  <label>끝 숫자: <input type="number" id="maxNum" value="100" /></label><br />
+  <button onclick="drawNumber()">추첨하기</button>
+  <p id="result"></p>
+
+  <script>
+    function drawNumber() {
+      const min = parseInt(document.getElementById("minNum").value);
+      const max = parseInt(document.getElementById("maxNum").value);
+      if (isNaN(min) || isNaN(max) || min > max) {
+        alert("유효한 숫자 범위를 입력하세요!");
+        return;
+      }
+      const random = Math.floor(Math.random() * (max - min + 1)) + min;
+      document.getElementById("result").innerText = `당첨 숫자: ${random}`;
+    }
+  </script>
+</body>
+</html>
